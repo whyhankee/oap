@@ -1,0 +1,26 @@
+{
+  "name": "oap",
+  "version": "0.0.0",
+  "description": "Object Argument Processor",
+  "main": "oap.js",
+  "scripts": {
+    "test": "tap t/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@colo.paulsplace.nl:oap"
+  },
+  "keywords": [
+    "object",
+    "argument",
+    "arguments",
+    "validate",
+    "processor",
+    "parser"
+  ],
+  "devDependencies": {
+    "tap": "*"
+  },
+  "author": "Paul Wijhenke",
+  "license": "MIT"
+}
