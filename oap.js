@@ -1,3 +1,4 @@
+/*jslint node: true */
 "use strict";
 var util = require('util');
 
@@ -18,7 +19,6 @@ var argumentOptions = [
 
 
 function check(obj, template, opt, callback) {
-  // Parse arguments
   if (typeof opt === 'function') {
     callback = opt;
     opt = undefined;
@@ -30,7 +30,7 @@ function check(obj, template, opt, callback) {
   if (typeof obj !== 'object')
     throw new Error('obj must be an object');
   if (typeof template !== 'object')
-    throw new Error('template must be an object')
+    throw new Error('template must be an object');
   if (typeof callback !== 'function')
     throw new Error('callback must be a function');
 

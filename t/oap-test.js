@@ -1,3 +1,4 @@
+/*jslint node: true */
 "use strict";
 var test = require('tap').test;
 var oap = require('../oap.js');
