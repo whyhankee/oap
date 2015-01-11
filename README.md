@@ -50,7 +50,7 @@ Also see `todo`
         }
       };
 
-      oap.check(template, args, function(err, result) {
+      oap.check(args, template, function(err, result) {
         if (err) return cb(err);
         doAmazingStuff(args);
       });
