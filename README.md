@@ -77,6 +77,7 @@ The options can be passed to the template
 
 ## Important
 * Make browser compatible
+* Measure and look for speed improvements
 
 ## Features
 * oneOf template option: check if value is in array
