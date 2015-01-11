@@ -1,4 +1,5 @@
 node_modules
 coverage
 
+._*
 npm-debug.log
