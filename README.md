@@ -30,7 +30,7 @@ Syntax is loosely based on Perl's Params::Check
       }
     };
     oap.check(template, args, function(err, result) {
-      if (err) return cb('Argument parsing failed'+err);
+      if (err) return cb('Argument parsing failed: '+err);
       doAmazingStuff(args);
     });
 
