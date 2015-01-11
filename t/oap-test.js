@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jshint node: true */
 "use strict";
 var test = require('tap').test;
 var oap = require('../oap.js');
@@ -44,7 +44,7 @@ function testInvocation (t) {
     function () {
       oap.check({}, {});
     },
-    new Error('callback must be a function')
+    new Error('done must be a function')
   );
 
   // calling check with an unknown template option
@@ -78,7 +78,7 @@ function testRequired (t) {
 
   function requiredInvalid (t) {
     oap.check({b: 'a'}, template, function (err, args) {
-      t.equal(err, 'a: argument missing', 'valid error');
+      t.deepEqual(err, {a: ['argument missing']}, 'valid error');
       t.equal(args, undefined, 'undefined return value');
       t.end();
     });
@@ -104,7 +104,7 @@ function testDefined (t) {
 
   function definedInvalid (t) {
     oap.check({a: undefined}, template, function (err, args) {
-      t.equal(err, 'a: argument missing or undefined', 'valid err');
+      t.deepEqual(err, {a: ['argument missing or undefined']}, 'valid error');
       t.equal(args, undefined, 'undefined return value');
       t.end();
     });
@@ -128,12 +128,12 @@ function testDefault (t) {
 
 function testFunction (t) {
   var template = {
-    a: {function: testFunction}
+    a: {function: testingFunction}
   };
 
-  function testFunction(v, cb) {
-    if (v === 'a') return cb(null);
-    return cb('invalid value, not a');
+  function testingFunction(v, cb) {
+    if (v === 'goodValue') return cb(null);
+    return cb('invalid value, not goodValue');
   }
 
   t.test('function valid', functionValid);
@@ -141,16 +141,16 @@ function testFunction (t) {
   t.test('function invalid invocation', functionInvalidInvocation);
 
   function functionValid (t) {
-    oap.check({a: 'a'}, template, function (err, args) {
+    oap.check({a: 'goodValue'}, template, function (err, args) {
       t.equal(err, null, 'no error');
-      t.deepEqual(args, {a: 'a'}, 'valid arguments');
+      t.deepEqual(args, {a: 'goodValue'}, 'valid arguments');
       t.end();
     });
   }
 
   function functionInvalid (t) {
     oap.check({a: 'b'}, template, function (err, args) {
-      t.equal(err, 'a: invalid value, not a', 'valid error');
+      t.deepEqual(err, {a: ['invalid value, not goodValue']}, 'valid error');
       t.equal(args, undefined, 'undefined return value');
       t.end();
     });
@@ -192,8 +192,8 @@ function testRequires (t) {
 
   function requiresInvalid (t) {
     oap.check({a: 'a'}, template, function (err, args) {
-      var expectedErr = "a: requires key 'b'";
-      t.equal(err, expectedErr, expectedErr);
+      var expectedErr = "requires key 'b'";
+      t.deepEqual(err, {a: [expectedErr]}, 'valid error');
       t.equal(args, undefined, 'undefined return value');
       t.end();
     });
@@ -235,8 +235,8 @@ function testExcludes (t) {
 
   function excludesInvalid (t) {
     oap.check({a: 'a', b: 'b'}, template, function (err, args) {
-      var expectedErr = "a: excludes key 'b'";
-      t.equal(err, expectedErr, expectedErr);
+      var expectedErr = "excludes key 'b'";
+      t.deepEqual(err, {a: [expectedErr]}, 'valid error');
       t.equal(args, undefined, 'undefined return value');
       t.end();
     });

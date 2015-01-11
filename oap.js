@@ -2,6 +2,9 @@
 "use strict";
 var util = require('util');
 
+// Some template check code is skipped on production for
+//  speed improvement
+var isProduction = (process.env.NODE_ENV.match(/^prod/));
 
 var defaultOptions = {
   extraArguments: false   // Allow arguments not in template
@@ -18,36 +21,59 @@ var argumentOptions = [
 ];
 
 
-function check(obj, template, opt, callback) {
+function check(obj, template, opt, done) {
   if (typeof opt === 'function') {
-    callback = opt;
+    done = opt;
     opt = undefined;
   }
   if (opt === undefined) {
     opt = defaultOptions;
   }
 
-  if (typeof obj !== 'object')
-    throw new Error('obj must be an object');
-  if (typeof template !== 'object')
-    throw new Error('template must be an object');
-  if (typeof callback !== 'function')
-    throw new Error('callback must be a function');
-
   var checksPre = [];   // List of pre-checks
   var checksPost = [];  // List of post-checks
   var values = {};      // Values to return
+  var errors = {};
 
-  // Pre-checks per template item
+  // Argument type checking
+  if (!isProduction) {
+    if (typeof obj !== 'object')
+      throw new Error('obj must be an object');
+    if (typeof template !== 'object')
+      throw new Error('template must be an object');
+    if (typeof done !== 'function')
+      throw new Error('done must be a function');
+  }
+
+  // Iterate over all the template arguments
   Object.keys(template).forEach( function processArgument(arg) {
 
-    // Check valid template options for this argumnt
+    // Determine template checks for this argument
     Object.keys(template[arg]).forEach( function (templateOpt) {
-      if (argumentOptions.indexOf(templateOpt) === -1) {
-        var err = util.format( "%s: unknown template option: %s",
-          arg, templateOpt
-        );
-        throw new Error(err);
+
+      // Check template options for this arguments
+      if (!isProduction) {
+
+        // Unknow template option?
+        if (argumentOptions.indexOf(templateOpt) === -1) {
+          var err = util.format( "%s: unknown template option: %s",
+            arg, templateOpt
+          );
+          throw new Error(err);
+        }
+
+        // Template arguments - function
+        if (template[arg].function && typeof template[arg].function !== 'function') {
+          throw new Error(arg + ': passed function is not a function');
+        }
+        // Template arguments - requires
+        if (template[arg].requires && !(template[arg].requires instanceof Array)) {
+          throw new Error(arg + ': passed requires-list should be an array');
+        }
+        // Template arguments - excludes
+        if (template[arg].excludes && !(template[arg].excludes instanceof Array)) {
+          throw new Error(arg + ': passed excludes-list should be an array');
+        }
       }
     });
 
@@ -79,55 +105,61 @@ function check(obj, template, opt, callback) {
       checkAdd(checksPost, arg, checkExcludes);
     }
   });
-  checksRun();
 
-
+  /**
+   * Argument checking flow
+   */
   function checkAdd(list, key, func) {
     list.push({key: key, func: func});
   }
 
-  // Executes the validations for a list of tests
-  function checksDo(listChecks, callback) {
-    if (listChecks.length === 0) return callback(null);
+  checksDo(checksPre, function (err) {
+    if (err) return checksDone();
+    checksDo(checksPost, function (err) {
+      return checksDone();
+    });
+  });
+  function checksDone() {
+    if (Object.keys(errors).length) return done(errors);
+    return done(null, values);
+  }
+
+  function checksDo(listChecks, cb) {
+    if (listChecks.length === 0) {
+      return cb(Object.keys(errors).length);
+    }
 
     var check = listChecks.shift();
-    check.func(check.key, function (err, v) {
-      if (err) return callback(err);
+    check.func(check.key, function (errObject, v) {
+      // On error, push the error to the error-stack and
+      //  return cb() with an indication that an error occured
+      if (errObject) {
+        var argName = Object.keys(errObject)[0];
 
-      // do the next check
-      setImmediate(checksDo, listChecks, callback);
+        if (!errors[argName]) errors[argName] = [];
+        errors[argName].push(errObject[argName]);
+      }
+
+      // schedule the next check
+      setImmediate(checksDo, listChecks, cb);
     });
   }
 
-  // Does pre-tests first, and post-tests after
-  function checksRun() {
-    checksDo(checksPre, function (err) {
-      if (err) return checksDone(err);
-      checksDo(checksPost, function (err) {
-        return checksDone(err);
-      });
-    });
-  }
-
-  function checksDone(err) {
-    if (err) return callback(err);
-    return callback(null, values);
-  }
-
-
-  // Argument checks
+  /**
+   * The argument checking functions
+   */
   function checkRequired(k, cb) {
     if (k in obj)
       return cb(null);
     else
-      return cb(k + ': argument missing');
+      return cb(buildError(k, 'argument missing'));
   }
 
   function checkDefined(k, cb) {
     if (k in obj && obj[k] !== undefined)
       return cb(null);
     else
-      return cb(k + ': argument missing or undefined');
+      return cb(buildError(k, 'argument missing or undefined'));
   }
 
   function checkDefault(k, cb) {
@@ -137,37 +169,34 @@ function check(obj, template, opt, callback) {
   }
 
   function checkFunction(k, cb) {
-    if (typeof template[k].function !== 'function')
-      throw new Error(k + ': passed function is not a function');
-
     template[k].function(obj[k], function (err) {
-      if (err) return cb(k + ": "+err);
+      if (err) return cb(buildError(k, err));
       return cb(null);
     });
   }
 
   function checkRequires(k, cb) {
-    if (!(template[k].requires instanceof Array))
-      throw new Error(k + ': passed requires-list should be an array');
-
     template[k].requires.forEach( function (requiredKey) {
       if (!(requiredKey in obj))
-        return cb(k + ": requires key '"+ requiredKey +"'");
+        return cb(buildError(k, "requires key '" +requiredKey+ "'"));
     });
     return cb(null);
   }
 
   function checkExcludes(k, cb) {
-    if (!(template[k].excludes instanceof Array))
-      throw new Error(k + ': passed excludes-list should be an array');
-
     template[k].excludes.forEach( function (excludeKey) {
       if (excludeKey in obj)
-        return cb(k + ": excludes key '"+ excludeKey +"'");
+        return cb(buildError(k, "excludes key '"+ excludeKey +"'"));
     });
     return cb(null);
   }
 
+  // Builds an error object the checks can return
+  function buildError(k, message) {
+    var errObj = {};
+    errObj[k] = message;
+    return errObj;
+  }
 }
 
 
