@@ -21,6 +21,6 @@
   "devDependencies": {
     "tap": "*"
   },
-  "author": "Paul Wijhenke",
+  "author": "Paul Wijhenke <paul@paulsplace.nl>",
   "license": "MIT"
 }
