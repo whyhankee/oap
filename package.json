@@ -4,7 +4,8 @@
   "description": "Object Argument Processor",
   "main": "oap.js",
   "scripts": {
-    "test": "tap t/"
+    "test": "tap t/",
+    "tdd": "nodemon node_modules/.bin/tap t/"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
     "parser"
   ],
   "devDependencies": {
+    "nodemon": "*",
     "tap": "*"
   },
   "author": "Paul Wijhenke <paul@paulsplace.nl>",
