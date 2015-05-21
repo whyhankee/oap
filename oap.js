@@ -7,7 +7,7 @@ var util = require('util');
 var isProduction = (process.env.NODE_ENV.match(/^prod/));
 
 var defaultOptions = {
-  extraArguments: false   // Allow arguments not in template
+  extraArguments: true   // Allow arguments not in template
 };
 
 

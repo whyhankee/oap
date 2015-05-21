@@ -17,7 +17,7 @@ test('function', testFunction);
 function testDefaults (t) {
   t.deepEqual(
     oap.defaults,
-    {extraArguments: false},
+    {extraArguments: true},
     'valid default options'
   );
   t.end();
