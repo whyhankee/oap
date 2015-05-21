@@ -9,8 +9,6 @@ Syntax is loosely based on Perl's Params::Check
 
 ## Production Disclaimer
 
-ready: No!
-
 It's pretty new. Tests say it works but it could use some experience.
 Also see `todo`
 
@@ -84,5 +82,4 @@ The options can be passed to the template
 * integrate with [validator](https://www.npmjs.com/package/validator "Validator") for value validation
 
 ## Bonus
-* split-up the check() function
-* Replace testrunner (tap -> mocha)
+* split-up the check() function, it's a bit long
