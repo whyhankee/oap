@@ -21,7 +21,7 @@ var argumentOptions = [
 ];
 
 
-function check(obj, template, opt, done) {
+function check(args, template, opt, done) {
   if (typeof opt === 'function') {
     done = opt;
     opt = undefined;
@@ -37,8 +37,8 @@ function check(obj, template, opt, done) {
 
   // Argument type checking
   if (!isProduction) {
-    if (typeof obj !== 'object')
-      throw new Error('obj must be an object');
+    if (typeof args !== 'object')
+      throw new Error('args must be an object');
     if (typeof template !== 'object')
       throw new Error('template must be an object');
     if (typeof done !== 'function')
@@ -52,9 +52,10 @@ function check(obj, template, opt, done) {
     Object.keys(template[arg]).forEach( function (templateOpt) {
 
       // Check template options for this arguments
+      //    Skip in production (for speed)
       if (!isProduction) {
 
-        // Unknow template option?
+        // Unknown template option?
         if (argumentOptions.indexOf(templateOpt) === -1) {
           var err = util.format( "%s: unknown template option: %s",
             arg, templateOpt
@@ -78,7 +79,7 @@ function check(obj, template, opt, done) {
     });
 
     // Set initial value for option, can change later
-    if (arg in obj) values[arg] = obj[arg];
+    if (arg in args) values[arg] = args[arg];
 
     // Required
     if ('required' in template[arg]) {
@@ -115,10 +116,11 @@ function check(obj, template, opt, done) {
 
   checksDo(checksPre, function (err) {
     if (err) return checksDone();
-    checksDo(checksPost, function (err) {
+    checksDo(checksPost, function (/*err*/) {
       return checksDone();
     });
   });
+
   function checksDone() {
     if (Object.keys(errors).length) return done(errors);
     return done(null, values);
@@ -130,7 +132,7 @@ function check(obj, template, opt, done) {
     }
 
     var check = listChecks.shift();
-    check.func(check.key, function (errObject, v) {
+    check.func(check.key, function (errObject) {
       // On error, push the error to the error-stack and
       //  return cb() with an indication that an error occured
       if (errObject) {
@@ -149,27 +151,28 @@ function check(obj, template, opt, done) {
    * The argument checking functions
    */
   function checkRequired(k, cb) {
-    if (k in obj)
+    if (k in args)
       return cb(null);
     else
       return cb(buildError(k, 'argument missing'));
   }
 
   function checkDefined(k, cb) {
-    if (k in obj && obj[k] !== undefined)
+    if (k in args && args[k] !== undefined)
       return cb(null);
     else
       return cb(buildError(k, 'argument missing or undefined'));
   }
 
   function checkDefault(k, cb) {
-    if (!(k in obj))
+    if (!(k in args)) {
       values[k] = template[k].default;
+    }
     return cb(null);
   }
 
   function checkFunction(k, cb) {
-    template[k].function(obj[k], function (err) {
+    template[k].function(args[k], function (err) {
       if (err) return cb(buildError(k, err));
       return cb(null);
     });
@@ -177,26 +180,30 @@ function check(obj, template, opt, done) {
 
   function checkRequires(k, cb) {
     template[k].requires.forEach( function (requiredKey) {
-      if (!(requiredKey in obj))
+      if (!(requiredKey in args)) {
         return cb(buildError(k, "requires key '" +requiredKey+ "'"));
+      }
     });
     return cb(null);
   }
 
   function checkExcludes(k, cb) {
     template[k].excludes.forEach( function (excludeKey) {
-      if (excludeKey in obj)
+      if (excludeKey in args)
         return cb(buildError(k, "excludes key '"+ excludeKey +"'"));
     });
     return cb(null);
   }
 
-  // Builds an error object the checks can return
-  function buildError(k, message) {
-    var errObj = {};
-    errObj[k] = message;
-    return errObj;
-  }
+}
+
+
+// Builds an error object the checks can return - private
+//
+function buildError(k, message) {
+  var errObj = {};
+  errObj[k] = message;
+  return errObj;
 }
 
 

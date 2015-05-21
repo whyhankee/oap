@@ -30,7 +30,7 @@ function testInvocation (t) {
     function () {
       oap.check();
     },
-    new Error('obj must be an object')
+    new Error('args must be an object')
   );
 
   t.throws(
@@ -256,5 +256,3 @@ function testExcludes (t) {
     t.end();
   }
 }
-
-
