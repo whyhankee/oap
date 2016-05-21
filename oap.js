@@ -4,7 +4,7 @@ var util = require('util');
 
 // Some template check code is skipped on production for
 //  speed improvement
-var isProduction = (process.env.NODE_ENV.match(/^prod/));
+var isProduction = (process.env.NODE_ENV && process.env.NODE_ENV.match(/^prod/));
 
 var defaultOptions = {
   extraArguments: true   // Allow arguments not in template
