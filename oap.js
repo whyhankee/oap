@@ -1,6 +1,6 @@
-/*jslint node: true */
-"use strict";
+'use strict';
 var util = require('util');
+
 
 // Some template check code is skipped on production for
 //  speed improvement
@@ -57,7 +57,7 @@ function check(args, template, opt, done) {
 
         // Unknown template option?
         if (argumentOptions.indexOf(templateOpt) === -1) {
-          var err = util.format( "%s: unknown template option: %s",
+          var err = util.format( '%s: unknown template option: %s',
             arg, templateOpt
           );
           throw new Error(err);
@@ -114,8 +114,12 @@ function check(args, template, opt, done) {
     list.push({key: key, func: func});
   }
 
+  /**
+   * Start the checks
+   */
   checksDo(checksPre, function (err) {
     if (err) return checksDone();
+
     checksDo(checksPost, function (/*err*/) {
       return checksDone();
     });
@@ -126,22 +130,16 @@ function check(args, template, opt, done) {
     return done(null, values);
   }
 
+  /**
+   * Do all the checks in the list
+   */
   function checksDo(listChecks, cb) {
     if (listChecks.length === 0) {
-      return cb(Object.keys(errors).length);
+      return cb();
     }
 
     var check = listChecks.shift();
-    check.func(check.key, function (errObject) {
-      // On error, push the error to the error-stack and
-      //  return cb() with an indication that an error occured
-      if (errObject) {
-        var argName = Object.keys(errObject)[0];
-
-        if (!errors[argName]) errors[argName] = [];
-        errors[argName].push(errObject[argName]);
-      }
-
+    check.func(check.key, function () {
       // schedule the next check
       setImmediate(checksDo, listChecks, cb);
     });
@@ -180,36 +178,29 @@ function check(args, template, opt, done) {
 
   function checkRequires(k, cb) {
     template[k].requires.forEach( function (requiredKey) {
-      if (!(requiredKey in args)) {
-        return cb(buildError(k, "requires key '" +requiredKey+ "'"));
-      }
+      if (!(requiredKey in args)) buildError(k, 'requires key \'' +requiredKey+ '\'');
     });
     return cb(null);
   }
 
   function checkExcludes(k, cb) {
     template[k].excludes.forEach( function (excludeKey) {
-      if (excludeKey in args)
-        return cb(buildError(k, "excludes key '"+ excludeKey +"'"));
+      if (excludeKey in args) buildError(k, 'excludes key \''+ excludeKey +'\'');
     });
     return cb(null);
   }
 
-}
-
-
-// Builds an error object the checks can return - private
-//
-function buildError(k, message) {
-  var errObj = {};
-  errObj[k] = message;
-  return errObj;
+  // Add's error to the errors object;
+  //
+  function buildError(k, message) {
+    if (!Array.isArray(errors[k])) errors[k] = [];
+    errors[k].push(message);
+  }
 }
 
 
 /*
   Exports
 */
-
 exports.check = check;
 exports.defaults = defaultOptions;

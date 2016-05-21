@@ -1,15 +1,15 @@
 {
   "name": "oap",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Object Argument Processor",
   "main": "oap.js",
   "scripts": {
-    "test": "tap t/",
-    "tdd": "nodemon node_modules/.bin/tap t/"
+    "test": "mocha && eslint **/*.js",
+    "tdd": "mocha -w"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Lerint/oap.git"
+    "url": "git@github.com:whyhankee/oap.git"
   },
   "keywords": [
     "object",
@@ -20,8 +20,9 @@
     "parser"
   ],
   "devDependencies": {
-    "nodemon": "*",
-    "tap": "*"
+    "eslint": "2.10.2",
+    "expect.js": "0.3.1",
+    "mocha": "2.4.5"
   },
   "author": "Paul Wijhenke <paul@paulsplace.nl>",
   "license": "MIT"
