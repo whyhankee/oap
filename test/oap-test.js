@@ -6,47 +6,47 @@ var oap = require('../oap.js');
 
 describe('Default options', testDefaults);
 describe('Invocation', testInvocation);
-describe('Required', testRequired);
-describe('Defined', testDefined);
-describe('Default', testDefault);
-describe('Requires', testRequires);
-describe('Excludes', testExcludes);
-describe('Function', testFunction);
+describe('Validate - required', testRequired);
+describe('Validate - defined', testDefined);
+describe('Validate - default', testDefault);
+describe('Validate - requires', testRequires);
+describe('Validate - excludes', testExcludes);
+describe('Validate - function', testFunction);
 
 
 function testDefaults() {
   var expectedDefaults = {
     extraArguments: true
   };
-  it('proper defaults', function () {
+  it('Has proper defaults', function () {
     expect(oap.defaults).to.eql(expectedDefaults);
   });
 }
 
 
 function testInvocation() {
-  it('no args', function () {
+  it('No arguments passed', function () {
     function callINoArgs() {
       oap.check();
     }
     expect(callINoArgs).to.throwException(/args must be an object/);
   });
 
-  it('no template', function () {
+  it('No template passed', function () {
     function callNoTemplate() {
       oap.check({});
     }
     expect(callNoTemplate).to.throwException(/template must be an object/);
   });
 
-  it('no done', function () {
+  it('No done function passed', function () {
     function callNoDone() {
       oap.check({}, {});
     }
     expect(callNoDone).to.throwException(/done must be a function/);
   });
 
-  it('invaid template option', function () {
+  it('Invaid template-option passed', function () {
     function callInvalidOption() {
       oap.check({}, {a: {'__invalid__': true}}, function() {});
     }
