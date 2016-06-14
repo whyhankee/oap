@@ -1,10 +1,6 @@
 ## OAP - Object Argument Parser
 
-This module can be used in situations where Objects are used to pass arguments.
-
 The main goal of this module is to provide a easy method for validating the *existence* of arguments (values) in an Object. For value validation check other modules like [validator](https://www.npmjs.com/package/validator "Validator").
-
-Syntax is loosely based on Perl's Params::Check
 
 [![Travis-CI](https://travis-ci.org/whyhankee/oap.svg)](https://travis-ci.org/whyhankee/oap)
 [![David](https://david-dm.org/whyhankee/oap.svg)](https://david-dm.org)
@@ -14,8 +10,9 @@ Syntax is loosely based on Perl's Params::Check
 
 This was an early project learning Javascript. However it's still being used so I will passively maintain it.
 
-I started using [https://github.com/ansman/validate.js] as it's more mature.
-
+For better solutions check:
+* [https://github.com/ansman/validate.js]
+* [https://github.com/bugventure/jsen]
 
 ## What it does
 
@@ -82,7 +79,7 @@ The options can be passed to the template
 * Fix double callback-calling on requires/excludes invalid invocation
 * Moved repository to my personal Github account
 * Add to Travis-CI
-*
+
 
 ## TODO
 
