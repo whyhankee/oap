@@ -73,6 +73,12 @@ The options can be passed to the template
 
 ## Changelog
 
+### 0.0.8
+* Fix crash when NODE_ENV is not present
+* Documentation updates
+* Changed some test output for consistency
+
+
 ### 0.0.7 - Maintenance update
 * Switch to Mocha as test-suite
 * Switch to ESLint as linter
